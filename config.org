@@ -3,23 +3,28 @@
 #+STARTUP: showeverything
 #+OPTIONS: toc:2
 
-* TABLE OF CONTENTS :toc:
-- [[#important-programs-to-load-first][IMPORTANT PROGRAMS TO LOAD FIRST]]
-  - [[#elpaca-package-manager][Elpaca Package Manager]]
-  - [[#load-evil-mode][Load Evil Mode]]
-  - [[#general-bindings][General Bindings]]
-- [[#fonts][FONTS]]
-  - [[#setting-the-font-face][Setting the Font Face]]
+* Table Of Contents :toc:
+- [[#important-programs-to-load-first][Important Programs to Load First]]
+  - [[#package-manager-elpaca][Package Manager (Elpaca)]]
+  - [[#vim-emulation-layer-evil-mode][Vim Emulation Layer (Evil Mode)]]
+- [[#keybinds-w-general][Keybinds w/ General]]
+- [[#dude-wheres-my-keybind-which-key][Dude, Where's My Keybind? (Which-Key)]]
 - [[#gui-tweaks][GUI Tweaks]]
+  - [[#fonts][Fonts]]
   - [[#disable-menubar-toolbars-and-scrollbars][Disable Menubar, Toolbars, and Scrollbars]]
   - [[#enable-line-numbers-and-truncated-lines][Enable Line Numbers and Truncated Lines]]
-- [[#org-mode][ORG MODE]]
+  - [[#all-the-icons][All The Icons]]
+  - [[#render-hex-colors-inline][Render Hex Colors Inline]]
+  - [[#theming][Theming]]
+- [[#ivy-and-counsel][Ivy and Counsel]]
+- [[#org-mode][Org Mode]]
   - [[#table-of-contents][Table of Contents]]
   - [[#org-bullets][Org Bullets]]
-- [[#which-key][WHICH-KEY]]
+  - [[#disable-electric-indent][Disable Electric Indent]]
+  - [[#enable-org-tempo][Enable Org Tempo]]
 
-* IMPORTANT PROGRAMS TO LOAD FIRST
-** Elpaca Package Manager
+* Important Programs to Load First
+** Package Manager (Elpaca)
 
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.6)
@@ -60,7 +65,7 @@
   (elpaca `(,@elpaca-order))
 #+end_src
 
-** Load Evil Mode
+** Vim Emulation Layer (Evil Mode)
 #+begin_src emacs-lisp
   (elpaca elpaca-use-package
     (elpaca-use-package-mode)
@@ -84,7 +89,7 @@
   (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
 #+end_src
 
-** General Bindings
+* Keybinds w/ General
 
 #+begin_src emacs-lisp
   (use-package general
@@ -106,14 +111,22 @@
       "h v" '(describe-variable :wk "Describe variable")
       "f c" '((lambda () (interactive) (find-file "~/.config/emacs/config.org")) :wk "Open Emacs config")
       "h r r" '((lambda () (interactive) (load-file "~/.config/emacs/init.el")) :wk "Reload Emacs config"))
+  
+    ;; files
+    (phasewalk1/leader-keys
+      "." '(find-file :wk "Find file")
+      "f r" '(counsel-recentf :wk "Find recent files"))
 
     ;; buffers
     (phasewalk1/leader-keys
-      "." '(find-file :wk "Find file")
       "b" '(:ignore t :wk "buffer")
       "bb" '(switch-to-buffer :wk "Switch buffer")
       "bk" '(kill-this-buffer :wk "Kill this buffer")
       "bp" '(previous-buffer :wk "Previous buffer"))
+
+    ;; toggle
+    (phasewalk1/leader-keys
+      "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
     ;; eval
     (phasewalk1/leader-keys
@@ -122,62 +135,153 @@
       "e d" '(eval-defun :wk "Evaluate defun")))
 #+end_src
 
-* FONTS
-** Setting the Font Face
+* Dude, Where's My Keybind? (Which-Key)
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil
-    :font "0xProto Nerd Font Mono"
-    :height 110
-    :weight 'medium)
+(use-package which-key
+  :init
+    (which-key-mode 1)
+  :config
+    (setq which-key-side-window-location 'bottom
+      which-key-sort-order #'which-key-key-order-alpha
+      which-key-sort-uppercase-first nil
+      which-key-add-column-padding 1
+      which-key-max-display-columns nil
+      which-key-min-display-lines 6
+      which-key-side-windlow-slot -10
+      which-key-side-window-max-height 0.25
+      which-key-idle-delay 0.8
+      which-key-separator " ➔ "
+      which-key-allow-imprecise-window-fit t))
 #+end_src
+
 
 * GUI Tweaks
+** Fonts
+*** Setting the Font Face
+
+    #+begin_src emacs-lisp
+      (set-face-attribute 'default nil
+        :font "0xProto Nerd Font Mono"
+        :height 110
+        :weight 'medium)
+    #+end_src
+
 ** Disable Menubar, Toolbars, and Scrollbars
 
-#+begin_src emacs-lisp
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-#+end_src
+  #+begin_src emacs-lisp
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+  #+end_src
 
 ** Enable Line Numbers and Truncated Lines
 
-#+begin_src emacs-lisp
-  (global-display-line-numbers-mode 1)
-  (global-visual-line-mode 1)
-#+end_src
+  #+begin_src emacs-lisp
+    (global-display-line-numbers-mode 1)
+    (global-visual-line-mode 1)
+  #+end_src
+  
+** All The Icons
 
-* ORG MODE
+  #+begin_src emacs-lisp
+    (use-package all-the-icons
+      :ensure t
+      :if (display-graphic-p))
+    
+    (use-package all-the-icons-dired 
+      :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+  #+end_src
+
+** Render Hex Colors Inline 
+ 
+ #+begin_src emacs-lisp
+   (use-package rainbow-mode
+     :hook org-mode prog-mode)
+ #+end_src
+ 
+** Theming
+  #+begin_src emacs-lisp
+    (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
+    (load-theme 'magonyx t)
+  #+end_src
+  
+* Ivy and Counsel
+ Ivy is a generic completion frontend for Emacs. Counsel is a collection of ivy-enhanced, common Emacs commands.
+ Ivy-rich allows us to add descriptions alongside the commands in M-x.
+ 
+ #+begin_src emacs-lisp
+   (use-package counsel
+     :after ivy
+     :config (counsel-mode))
+
+   (use-package ivy
+     :custom
+       (setq ivy-use-virtual-buffers t)
+       (setq ivy-count-format "(%d/%d) ")
+       (setq enable-recursive-minibuffers t)
+     :config
+       (ivy-mode))
+
+   (use-package all-the-icons-ivy-rich
+     :ensure t
+     :init (all-the-icons-ivy-rich-mode 1))  
+
+   (use-package ivy-rich
+     :after ivy
+     :ensure t
+     :init (ivy-rich-mode 1)
+     :custom
+       (ivy-virtual-abbreviate 'full
+	 ivy-rich-switch-buffer-align-virtual-buffer t
+	 ivy-rich-path-style 'abbrev)
+     :config
+       (ivy-set-display-transformer 'ivy-switch-buffer
+				    'ivy-rich-switch-buffer-transformer))
+
+ #+end_src
+
+* Org Mode
 ** Table of Contents
-#+begin_src emacs-lisp
-  (use-package toc-org
-    :commands toc-org-enable
-    :init (add-hook 'org-mode-hook 'toc-org-enable))
-#+end_src 
+
+  #+begin_src emacs-lisp
+    (use-package toc-org
+      :commands toc-org-enable
+      :init (add-hook 'org-mode-hook 'toc-org-enable))
+  #+end_src 
 
 ** Org Bullets
-#+begin_src emacs-lisp
-  (add-hook 'org-mood-hook 'org-indent-mode)
-  (use-package org-bullets)
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-#+end_src 
 
-* WHICH-KEY
-#+begin_src emacs-lisp
-  (use-package which-key
-    :init
-      (which-key-mode 1)
-    :config
-    (setq which-key-side-window-location 'bottom
-	  which-key-sort-order #'which-key-key-order-alpha
-	  which-key-sort-uppercase-first nil
-	  which-key-add-column-padding 1
-	  which-key-max-display-columns nil
-	  which-key-min-display-lines 6
-	  which-key-side-windlow-slot -10
-	  which-key-side-window-max-height 0.25
-	  which-key-idle-delay 0.8
-          which-key-separator " ➔ "
-	  which-key-allow-imprecise-window-fit t))
-#+end_src
+  #+begin_src emacs-lisp
+    (add-hook 'org-mood-hook 'org-indent-mode)
+    (use-package org-bullets)
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  #+end_src 
+
+** Disable Electric Indent
+ Org mode source blocks have some really weird and annoying default indentation behavior. Let's fix that:
+
+ #+begin_src emacs-lisp
+   (electric-indent-mode -1)
+ #+end_src
+ 
+** Enable Org Tempo
+ This allows you to open source blocks in Org mode using "<sTAB" (among other functionality).
+ 
+ #+begin_src emacs-lisp
+   (require 'org-tempo)
+ #+end_src
+ 
+| Typing the below + TAB   | Expands to ...                            |
+| ------------------------ + ----------------------------------------- |
+| <a                       | '#+BEGIN_EXPORT ascii' ... '#+END_EXPORT  |
+| <c                       | '#+BEGIN_CENTER' ... '#+END_CENTER'       |
+| <C                       | '#+BEGIN_COMMENT' ... '#+END_COMMENT'     |
+| <e                       | '#+BEGIN_EXAMPLE' ... '#+END_EXAMPLE'     |
+| <E                       | '#+BEGIN_EXPORT' ... '#+END_EXPORT'       |
+| <h                       | '#+BEGIN_EXPORT' html ... '#+END_EXPORT'  |
+| <l                       | '#+BEGIN_EXPORT' latex ... '#+END_EXPORT' |
+| <q                       | '#+BEGIN_QUOTE' ... '#+END_QUOTE'         |
+| <s                       | '#+BEGIN_SRC' ... '#+END_SRC'             |
+| <v                       | '#+BEGIN_VERSE' ... '#+END_VERSE'         |
+
